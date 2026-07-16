@@ -68,6 +68,13 @@ const server = http.createServer(async (req, res) => {
     const pathname = parsedUrl.pathname;
     const method = req.method;
 
+    // Endpoint welcome
+    if (method === "GET" && pathname === "/") {
+        sendJSON(res, 200, {
+            status: "success",
+            message: "Welcome to Node Todo API",
+        });
+    }
     // endpoint menampilkan seluruh data notes
     if (method === "GET" && pathname === "/api/notes") {
         await getNote(req, res);
