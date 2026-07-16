@@ -1,0 +1,29 @@
+{
+  "name": "nodetodo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "append.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lordfroze/nodetodo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Lordfroze/nodetodo/issues"
+  },
+  "homepage": "https://github.com/Lordfroze/nodetodo#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "mysql2": "^3.23.0"
+  }
+}
