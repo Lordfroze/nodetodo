@@ -62,6 +62,30 @@ async function getNote(req, res) {
     }
 }
 
+// Function menampilkan data notes berdasarkan id
+async function getNoteById(req, res, id) {
+    try {
+        const [rows] = await db.query(`SELECT * FROM notes WHERE id= ?`, [id]);
+
+        if (rows.length === 0) {
+            return sendJSON(res, 404, {
+                status: "error",
+                message: "Obat tidak ditemukan",
+            });
+        }
+        sendJSON(res, 200, {
+            status: "success",
+            data: rows[0],
+        });
+    } catch (error) {
+        console.error("Error get obat by id:", error);
+        sendJSON(res, 500, {
+            status: "error",
+            message: "Gagal mengambil data obat",
+        });
+    }
+}
+
 // Membuat server
 const server = http.createServer(async (req, res) => {
     const parsedUrl = url.parse(req.url, true);
@@ -79,6 +103,12 @@ const server = http.createServer(async (req, res) => {
     if (method === "GET" && pathname === "/api/notes") {
         await getNote(req, res);
     }
+    // endpoint menampilkan data notes berdasarkan id
+    else if (method === "GET" && pathname.match(/^\/api\/notes\/\d+$/)) {
+        const id = parseInt(pathname.split("/")[3]); // split id karena id berada di index 3 setelah /api/notes/
+        await getNoteById(req, res, id);
+    }
+
 });
 
 server.listen(PORT, () => {
