@@ -123,6 +123,58 @@ async function createNote(req, res) {
     }
 }
 
+// fungsi update note
+async function updateNote(req, res, id) {
+    try {
+        const body = await parseBody(req); // mengambil body dari request
+        const { notes } = body; // mengambil field dari body
+        const updates = []; // menyimpan update ke dalam array updates
+        const values = []; // menyimpan nilai dari field yang diupdate
+
+        if (notes !== undefined) {
+            // jika field notes ada
+            updates.push("notes = ?"); // menambahkan notes ke dalam updates
+            values.push(notes); // push nilai notes ke dalam values
+        }
+
+        // jika tidak ada field yang diupdate, maka return error
+        if (updates.length === 0) {
+            return sendJSON(res, 400, {
+                status: "error",
+                message: "Tidak ada field yang diupdate",
+            });
+        }
+
+        values.push(id); // push value diatas berdasarkan id
+
+        // update data ke database
+        const [result] = await db.query(
+            `UPDATE notes SET ${updates.join(", ")} WHERE id = ?`,
+            values,
+        );
+
+        // jika tidak ada obat yang diupdate, maka return error
+        if (result.affectedRows === 0) {
+            return sendJSON(res, 404, {
+                status: "error",
+                message: "Note tidak ditemukan",
+            });
+        }
+
+        sendJSON(res, 200, {
+            status: "success",
+            message: "Note berhasil diupdate",
+        });
+    } catch (error) {
+        console.error("Error update obat:", error);
+        sendJSON(res, 500, {
+            status: "error",
+            message: "Gagal mengupdate note",
+        });
+    }
+}
+
+
 
 // Membuat server
 const server = http.createServer(async (req, res) => {
@@ -147,9 +199,15 @@ const server = http.createServer(async (req, res) => {
         await getNoteById(req, res, id);
     }
 
-    // endpoint menambahkan obat
+    // endpoint menambahkan note
     else if (method === "POST" && pathname === "/api/notes") {
         await createNote(req, res);
+    }
+
+    // endpoint untuk update notes
+    else if (method === "PUT" && pathname.match(/^\/api\/notes\/\d+$/)) {
+        const id = parseInt(pathname.split("/")[3]); // split id karena id berada di index 3 setelah /api/notes/
+        await updateNote(req, res, id);
     }
 
 });
