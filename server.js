@@ -86,6 +86,44 @@ async function getNoteById(req, res, id) {
     }
 }
 
+
+async function createNote(req, res) {
+    try {
+        const body = await parseBody(req);
+
+        const { user_id, notes } = body;
+        if (!user_id || !notes) {
+            return sendJSON(res, 400, {
+                status: "error",
+                message: "Harap isi semua field",
+            });
+        }
+
+        // insert data ke database
+        const [result] = await db.query(
+            `
+            INSERT INTO notes (user_id, notes)
+            VALUES (?, ?)
+            `,
+            [user_id, notes],
+        );
+
+        sendJSON(res, 201, {
+            status: "success",
+            message: "Note berhasil ditambahkan",
+            data: notes,
+            id: result.insertId, // mengambil id yang diinsert
+        });
+    } catch (error) {
+        console.error("Error create note:", error);
+        sendJSON(res, 500, {
+            status: "error",
+            message: "Gagal menambahkan note",
+        });
+    }
+}
+
+
 // Membuat server
 const server = http.createServer(async (req, res) => {
     const parsedUrl = url.parse(req.url, true);
@@ -107,6 +145,11 @@ const server = http.createServer(async (req, res) => {
     else if (method === "GET" && pathname.match(/^\/api\/notes\/\d+$/)) {
         const id = parseInt(pathname.split("/")[3]); // split id karena id berada di index 3 setelah /api/notes/
         await getNoteById(req, res, id);
+    }
+
+    // endpoint menambahkan obat
+    else if (method === "POST" && pathname === "/api/notes") {
+        await createNote(req, res);
     }
 
 });
