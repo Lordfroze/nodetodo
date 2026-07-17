@@ -174,10 +174,44 @@ async function updateNote(req, res, id) {
     }
 }
 
+// fungsi menghapus notes
+async function deleteNote(req, res, id) {
+    try {
+        const [check] = await db.query(`SELECT id FROM notes WHERE id = ?`, [id]);
+        if (check.length === 0) {
+            return sendJSON(res, 404, {
+                status: "error",
+                message: "Note tidak ditemukan",
+            });
+        }
 
+        await db.query(`DELETE FROM notes WHERE id = ?`, [id]);
+        sendJSON(res, 200, {
+            status: "success",
+            message: "Note berhasil dihapus",
+        });
+    } catch (error) {
+        console.error("Error delete note:", error);
+        sendJSON(res, 500, {
+            status: "error",
+            message: "Gagal menghapus note",
+        });
+    }
+}
 
 // Membuat server
 const server = http.createServer(async (req, res) => {
+    // Handle CORS preflight requests for OPTIONS method
+    if (req.method === 'OPTIONS') {
+        res.writeHead(204, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+        });
+        res.end();
+        return;
+    }
+
     const parsedUrl = url.parse(req.url, true);
     const pathname = parsedUrl.pathname;
     const method = req.method;
@@ -208,6 +242,12 @@ const server = http.createServer(async (req, res) => {
     else if (method === "PUT" && pathname.match(/^\/api\/notes\/\d+$/)) {
         const id = parseInt(pathname.split("/")[3]); // split id karena id berada di index 3 setelah /api/notes/
         await updateNote(req, res, id);
+    }
+
+    // endpoint untuk menghapus note
+    else if (method === "DELETE" && pathname.match(/^\/api\/notes\/\d+$/)) {
+        const id = parseInt(pathname.split("/")[3]); // split id karena id berada di index 3 setelah /api/notes/
+        await deleteNote(req, res, id);
     }
 
 });
